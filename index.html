@@ -13,6 +13,8 @@
     .tab-bar { display: none; }
     .tab-content { display: block !important; }
     .tab-pane { display: block !important; }
+    .status-badge { display: none; }
+    .score-display { display: inline !important; }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -22,7 +24,7 @@
     padding: 20px;
   }
   .container { max-width: 1500px; margin: 0 auto; }
-  
+
   /* Header */
   .header {
     text-align: center;
@@ -76,7 +78,7 @@
   }
   .legend-item { display: flex; align-items: center; gap: 6px; }
   .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  
+
   /* Tabs */
   .tab-bar {
     display: flex;
@@ -108,7 +110,7 @@
   }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
-  
+
   /* Section titles */
   .section-title {
     font-size: 1.1em;
@@ -133,7 +135,7 @@
   }
   .knockout-title { border-left-color: #e11d48; background: linear-gradient(135deg, #fef2f2, #fee2e2); }
   .final-title { border-left-color: #ca8a04; background: linear-gradient(135deg, #fefce8, #fef9c3); }
-  
+
   .match-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -146,6 +148,8 @@
     border-radius: 8px;
     padding: 10px 12px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: opacity 0.3s, border-color 0.3s;
+    position: relative;
   }
   .match-card .date-row {
     display: flex;
@@ -174,12 +178,19 @@
   }
   .match-card .team.home { text-align: right; }
   .match-card .team.away { text-align: left; }
-  .match-card .vs {
-    font-size: 0.65em;
-    color: #94a3b8;
+  .match-card .vs-score {
+    font-size: 0.75em;
     font-weight: 700;
-    min-width: 20px;
+    min-width: 48px;
     text-align: center;
+  }
+  .match-card .vs-score .score-num {
+    font-size: 1.2em;
+    font-weight: 800;
+  }
+  .match-card .vs-score .score-dash {
+    color: #94a3b8;
+    margin: 0 2px;
   }
   .match-card .venue {
     font-size: 0.7em;
@@ -187,11 +198,90 @@
     margin-top: 4px;
     padding-top: 4px;
     border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .host-usa .team { color: #2563eb; }
   .host-canada .team { color: #e11d48; }
   .host-mexico .team { color: #d97706; }
-  
+
+  /* Status badges */
+  .status-badge {
+    display: inline-block;
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+  .status-live {
+    background: #16a34a;
+    color: #fff;
+    animation: pulse-live 1.5s ease-in-out infinite;
+  }
+  .status-finished {
+    background: #cbd5e1;
+    color: #475569;
+  }
+  .status-upcoming {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  /* Finished match styling */
+  .match-card.finished {
+    opacity: 0.75;
+    border-color: #e2e8f0;
+  }
+  .match-card.finished .team {
+    color: #94a3b8 !important;
+  }
+
+  /* Live match styling */
+  .match-card.live {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 1px #16a34a, 0 2px 8px rgba(22, 163, 74, 0.2);
+  }
+  .match-card.live .team {
+    color: #1e293b !important;
+  }
+
+  /* Now bar */
+  .now-bar {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1px solid #86efac;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .now-bar.visible { display: block; }
+  .now-bar .now-label {
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #16a34a;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .now-bar .now-match {
+    font-weight: 700;
+    font-size: 0.95em;
+  }
+  .now-bar .now-match .live-score {
+    color: #16a34a;
+    font-weight: 800;
+  }
+  .now-bar .now-venue {
+    font-size: 0.72em;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
   /* Calendar view */
   .cal-date {
     font-size: 1.05em;
@@ -212,18 +302,9 @@
     padding: 2px 10px;
     border-radius: 12px;
   }
-  .cal-match-day {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 6px;
-  }
-  
-  /* Today highlight */
   .is-today .cal-date { color: #2563eb; }
   .is-today .cal-date .count { background: #dbeafe; color: #2563eb; }
-  
-  /* Calendar mini-grid for knockout */
+
   .minitable {
     font-size: 0.72em;
     color: #64748b;
@@ -233,7 +314,83 @@
     border-radius: 4px;
     display: inline-block;
   }
-  
+
+  /* Config button */
+  .config-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    font-size: 1.1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: transform 0.2s;
+  }
+  .config-btn:hover { transform: scale(1.1); }
+
+  /* API config modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  }
+  .modal-box h3 { margin-bottom: 12px; color: #1e293b; }
+  .modal-box label { display: block; font-size: 0.82em; font-weight: 600; color: #475569; margin: 10px 0 4px; }
+  .modal-box input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.9em;
+  }
+  .modal-box .modal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: flex-end;
+  }
+  .modal-box .modal-actions button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.85em;
+  }
+  .modal-box .modal-actions .btn-primary { background: #2563eb; color: #fff; }
+  .modal-box .modal-actions .btn-secondary { background: #e2e8f0; color: #475569; }
+
+  /* Last updated */
+  .last-updated {
+    text-align: center;
+    font-size: 0.68em;
+    color: #94a3b8;
+    margin: 8px 0;
+    display: none;
+  }
+  .last-updated.visible { display: block; }
+
   @media (max-width: 768px) {
     .match-grid { grid-template-columns: 1fr; }
     .header h1 { font-size: 1.3em; }
@@ -256,6 +413,9 @@
   </div>
 </div>
 
+<!-- Now bar -->
+<div id="now-bar" class="now-bar"></div>
+
 <div class="no-print tab-bar" style="margin-bottom:0;">
   <button class="tab-btn active" onclick="switchTab('schedule')">&#9783; Groups</button>
   <button class="tab-btn" onclick="switchTab('calendar')">&#128197; Calendar</button>
@@ -263,1525 +423,17 @@
 </div>
 
 <!-- ========== TAB 1: GROUP SCHEDULE VIEW ========== -->
-<div id="tab-schedule" class="tab-content active">
-<div class="section-title">Group A <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-mexico">
-  <div class="date-row"><span class="date">June 11</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Mexico</div><div class="vs">vs</div><div class="team away">South Africa</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 11</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">South Korea</div><div class="vs">vs</div><div class="team away">Czech Republic</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 18</span><span class="time">11:00 a.m. ET</span></div>
-  <div class="teams"><div class="team home">Czech Republic</div><div class="vs">vs</div><div class="team away">South Africa</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card host-mexico">
-  <div class="date-row"><span class="date">June 18</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Mexico</div><div class="vs">vs</div><div class="team away">South Korea</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-<div class="match-card host-mexico">
-  <div class="date-row"><span class="date">June 24</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Czech Republic</div><div class="vs">vs</div><div class="team away">Mexico</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 24</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">South Africa</div><div class="vs">vs</div><div class="team away">South Korea</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-</div>
-<div class="section-title">Group B <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-canada">
-  <div class="date-row"><span class="date">June 12</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Canada</div><div class="vs">vs</div><div class="team away">Bosnia and Herzegovina</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 13</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Qatar</div><div class="vs">vs</div><div class="team away">Switzerland</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 18</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Switzerland</div><div class="vs">vs</div><div class="team away">Bosnia and Herzegovina</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card host-canada">
-  <div class="date-row"><span class="date">June 18</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Canada</div><div class="vs">vs</div><div class="team away">Qatar</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card host-canada">
-  <div class="date-row"><span class="date">June 24</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Switzerland</div><div class="vs">vs</div><div class="team away">Canada</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 24</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Bosnia and Herzegovina</div><div class="vs">vs</div><div class="team away">Qatar</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-</div>
-<div class="section-title">Group C <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 13</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Brazil</div><div class="vs">vs</div><div class="team away">Morocco</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 13</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Haiti</div><div class="vs">vs</div><div class="team away">Scotland</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 19</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Scotland</div><div class="vs">vs</div><div class="team away">Morocco</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 19</span><span class="time">7:30 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Brazil</div><div class="vs">vs</div><div class="team away">Haiti</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 24</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Scotland</div><div class="vs">vs</div><div class="team away">Brazil</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 24</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Morocco</div><div class="vs">vs</div><div class="team away">Haiti</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-</div>
-<div class="section-title">Group D <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-usa">
-  <div class="date-row"><span class="date">June 12</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">United States</div><div class="vs">vs</div><div class="team away">Paraguay</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 13</span><span class="time">11:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Australia</div><div class="vs">vs</div><div class="team away">Turkey</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card host-usa">
-  <div class="date-row"><span class="date">June 19</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">United States</div><div class="vs">vs</div><div class="team away">Australia</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 19</span><span class="time">10:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Turkey</div><div class="vs">vs</div><div class="team away">Paraguay</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card host-usa">
-  <div class="date-row"><span class="date">June 25</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Turkey</div><div class="vs">vs</div><div class="team away">United States</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 25</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Paraguay</div><div class="vs">vs</div><div class="team away">Australia</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="section-title">Group E <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 14</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Germany</div><div class="vs">vs</div><div class="team away">Curaçao</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 14</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Ivory Coast</div><div class="vs">vs</div><div class="team away">Ecuador</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 20</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Germany</div><div class="vs">vs</div><div class="team away">Ivory Coast</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 20</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Ecuador</div><div class="vs">vs</div><div class="team away">Curaçao</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 25</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Curaçao</div><div class="vs">vs</div><div class="team away">Ivory Coast</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 25</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Ecuador</div><div class="vs">vs</div><div class="team away">Germany</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-</div>
-<div class="section-title">Group F <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 14</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Netherlands</div><div class="vs">vs</div><div class="team away">Japan</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 14</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Sweden</div><div class="vs">vs</div><div class="team away">Tunisia</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 20</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Netherlands</div><div class="vs">vs</div><div class="team away">Sweden</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 20</span><span class="time">11:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Tunisia</div><div class="vs">vs</div><div class="team away">Japan</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 25</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Japan</div><div class="vs">vs</div><div class="team away">Sweden</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 25</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Tunisia</div><div class="vs">vs</div><div class="team away">Netherlands</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-</div>
-<div class="section-title">Group G <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 15</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Belgium</div><div class="vs">vs</div><div class="team away">Egypt</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 15</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Iran</div><div class="vs">vs</div><div class="team away">New Zealand</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 21</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Belgium</div><div class="vs">vs</div><div class="team away">Iran</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 21</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">New Zealand</div><div class="vs">vs</div><div class="team away">Egypt</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">10:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Egypt</div><div class="vs">vs</div><div class="team away">Iran</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">10:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">New Zealand</div><div class="vs">vs</div><div class="team away">Belgium</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="section-title">Group H <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 15</span><span class="time">11:00 a.m. ET</span></div>
-  <div class="teams"><div class="team home">Spain</div><div class="vs">vs</div><div class="team away">Cape Verde</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 15</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Saudi Arabia</div><div class="vs">vs</div><div class="team away">Uruguay</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 21</span><span class="time">11:00 a.m. ET</span></div>
-  <div class="teams"><div class="team home">Spain</div><div class="vs">vs</div><div class="team away">Saudi Arabia</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 21</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Uruguay</div><div class="vs">vs</div><div class="team away">Cape Verde</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Cape Verde</div><div class="vs">vs</div><div class="team away">Saudi Arabia</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Uruguay</div><div class="vs">vs</div><div class="team away">Spain</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-</div>
-<div class="section-title">Group I <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 16</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">France</div><div class="vs">vs</div><div class="team away">Senegal</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 16</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Iraq</div><div class="vs">vs</div><div class="team away">Norway</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 22</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">France</div><div class="vs">vs</div><div class="team away">Iraq</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 22</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Norway</div><div class="vs">vs</div><div class="team away">Senegal</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Norway</div><div class="vs">vs</div><div class="team away">France</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 26</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Senegal</div><div class="vs">vs</div><div class="team away">Iraq</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-</div>
-<div class="section-title">Group J <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 16</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Argentina</div><div class="vs">vs</div><div class="team away">Algeria</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 16</span><span class="time">11:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Austria</div><div class="vs">vs</div><div class="team away">Jordan</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 22</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Argentina</div><div class="vs">vs</div><div class="team away">Austria</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 22</span><span class="time">10:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Jordan</div><div class="vs">vs</div><div class="team away">Algeria</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Algeria</div><div class="vs">vs</div><div class="team away">Austria</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Jordan</div><div class="vs">vs</div><div class="team away">Argentina</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-</div>
-<div class="section-title">Group K <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 17</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Portugal</div><div class="vs">vs</div><div class="team away">DR Congo</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 17</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Uzbekistan</div><div class="vs">vs</div><div class="team away">Colombia</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 23</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Portugal</div><div class="vs">vs</div><div class="team away">Uzbekistan</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 23</span><span class="time">9:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Colombia</div><div class="vs">vs</div><div class="team away">DR Congo</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">6:30 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Colombia</div><div class="vs">vs</div><div class="team away">Portugal</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">6:30 p.m. ET</span></div>
-  <div class="teams"><div class="team home">DR Congo</div><div class="vs">vs</div><div class="team away">Uzbekistan</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-</div>
-<div class="section-title">Group L <span class="badge">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 17</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">England</div><div class="vs">vs</div><div class="team away">Croatia</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 17</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Ghana</div><div class="vs">vs</div><div class="team away">Panama</div></div>
-  <div class="venue">&#9901; Toronto Stadium, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 23</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">England</div><div class="vs">vs</div><div class="team away">Ghana</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 23</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Panama</div><div class="vs">vs</div><div class="team away">Croatia</div></div>
-  <div class="venue">&#9901; Toronto Stadium, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Panama</div><div class="vs">vs</div><div class="team away">England</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 27</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Croatia</div><div class="vs">vs</div><div class="team away">Ghana</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-</div>
-<div class="section-title knockout-title">&#9874; KNOCKOUT STAGE <span class="badge">32 matches</span></div>
-<div class="section-title knockout-title">Round of 32 <span class="badge">16 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">June 28</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 73</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 29</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 76</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 29</span><span class="time">3:30 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 74</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 29</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 75</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 30</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 78</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 30</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 77</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">June 30</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 79</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 1</span><span class="time">11:00 a.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 80</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 1</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 82</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 1</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 81</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 2</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 84</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 2</span><span class="time">6:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 83</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 2</span><span class="time">10:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 85</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 3</span><span class="time">1:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 88</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 3</span><span class="time">5:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 86</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 3</span><span class="time">8:30 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 87</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-</div>
-<div class="section-title knockout-title">Round of 16 <span class="badge">8 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">July 4</span><span class="time">12:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 90</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 4</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 89</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 5</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 91</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 5</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 92</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 6</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 93</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 6</span><span class="time">7:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 94</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 7</span><span class="time">11:00 a.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 95</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 7</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 96</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="section-title knockout-title">Quarter-final <span class="badge">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">July 9</span><span class="time">3:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 97</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 10</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 98</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 11</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 99</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 11</span><span class="time">8:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 100</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-</div>
-<div class="section-title knockout-title">Semi-final <span class="badge">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">July 14</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 101</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row"><span class="date">July 15</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 102</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-</div>
-<div class="section-title knockout-title">Third Place <span class="badge">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">July 18</span><span class="time">4:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 103</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-</div>
-<div class="section-title final-title">Final <span class="badge">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row"><span class="date">July 19</span><span class="time">2:00 p.m. ET</span></div>
-  <div class="teams"><div class="team home">Match 104</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-</div>
-</div> <!-- end schedule tab -->
-<div id="tab-calendar" class="tab-content">
-<div class="section-title" style="margin-top:0;">&#128197; CALENDAR VIEW <span class="badge">All matches by date</span></div>
-<div class="cal-date">Thursday, June 11 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-mexico">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Mexico</div><div class="vs">vs</div><div class="team away">South Africa</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">South Korea</div><div class="vs">vs</div><div class="team away">Czech Republic</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-</div>
-<div class="cal-date">Friday, June 12 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-canada">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Canada</div><div class="vs">vs</div><div class="team away">Bosnia and Herzegovina</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card host-usa">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">United States</div><div class="vs">vs</div><div class="team away">Paraguay</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-</div>
-<div class="cal-date">Saturday, June 13 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Qatar</div><div class="vs">vs</div><div class="team away">Switzerland</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Brazil</div><div class="vs">vs</div><div class="team away">Morocco</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Haiti</div><div class="vs">vs</div><div class="team away">Scotland</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">11:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Australia</div><div class="vs">vs</div><div class="team away">Turkey</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="cal-date">Sunday, June 14 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Germany</div><div class="vs">vs</div><div class="team away">Curaçao</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Netherlands</div><div class="vs">vs</div><div class="team away">Japan</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Ivory Coast</div><div class="vs">vs</div><div class="team away">Ecuador</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Sweden</div><div class="vs">vs</div><div class="team away">Tunisia</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-</div>
-<div class="cal-date">Monday, June 15 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">11:00 a.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Spain</div><div class="vs">vs</div><div class="team away">Cape Verde</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Belgium</div><div class="vs">vs</div><div class="team away">Egypt</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Saudi Arabia</div><div class="vs">vs</div><div class="team away">Uruguay</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Iran</div><div class="vs">vs</div><div class="team away">New Zealand</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-</div>
-<div class="cal-date">Tuesday, June 16 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">France</div><div class="vs">vs</div><div class="team away">Senegal</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Iraq</div><div class="vs">vs</div><div class="team away">Norway</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Argentina</div><div class="vs">vs</div><div class="team away">Algeria</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">11:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Austria</div><div class="vs">vs</div><div class="team away">Jordan</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="cal-date">Wednesday, June 17 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Portugal</div><div class="vs">vs</div><div class="team away">DR Congo</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">England</div><div class="vs">vs</div><div class="team away">Croatia</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Ghana</div><div class="vs">vs</div><div class="team away">Panama</div></div>
-  <div class="venue">&#9901; Toronto Stadium, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Uzbekistan</div><div class="vs">vs</div><div class="team away">Colombia</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-</div>
-<div class="cal-date">Thursday, June 18 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">11:00 a.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Czech Republic</div><div class="vs">vs</div><div class="team away">South Africa</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Switzerland</div><div class="vs">vs</div><div class="team away">Bosnia and Herzegovina</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card host-canada">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Canada</div><div class="vs">vs</div><div class="team away">Qatar</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card host-mexico">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Mexico</div><div class="vs">vs</div><div class="team away">South Korea</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-</div>
-<div class="cal-date">Friday, June 19 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-usa">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">United States</div><div class="vs">vs</div><div class="team away">Australia</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Scotland</div><div class="vs">vs</div><div class="team away">Morocco</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">7:30 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Brazil</div><div class="vs">vs</div><div class="team away">Haiti</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">10:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Turkey</div><div class="vs">vs</div><div class="team away">Paraguay</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="cal-date">Saturday, June 20 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Netherlands</div><div class="vs">vs</div><div class="team away">Sweden</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Germany</div><div class="vs">vs</div><div class="team away">Ivory Coast</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Ecuador</div><div class="vs">vs</div><div class="team away">Curaçao</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">11:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Tunisia</div><div class="vs">vs</div><div class="team away">Japan</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-</div>
-<div class="cal-date">Sunday, June 21 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">11:00 a.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Spain</div><div class="vs">vs</div><div class="team away">Saudi Arabia</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Belgium</div><div class="vs">vs</div><div class="team away">Iran</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Uruguay</div><div class="vs">vs</div><div class="team away">Cape Verde</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">New Zealand</div><div class="vs">vs</div><div class="team away">Egypt</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="cal-date">Monday, June 22 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Argentina</div><div class="vs">vs</div><div class="team away">Austria</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">France</div><div class="vs">vs</div><div class="team away">Iraq</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Norway</div><div class="vs">vs</div><div class="team away">Senegal</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">10:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Jordan</div><div class="vs">vs</div><div class="team away">Algeria</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="cal-date">Tuesday, June 23 <span class="count">4 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Portugal</div><div class="vs">vs</div><div class="team away">Uzbekistan</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">England</div><div class="vs">vs</div><div class="team away">Ghana</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Panama</div><div class="vs">vs</div><div class="team away">Croatia</div></div>
-  <div class="venue">&#9901; Toronto Stadium, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Colombia</div><div class="vs">vs</div><div class="team away">DR Congo</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-</div>
-<div class="cal-date">Wednesday, June 24 <span class="count">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card host-canada">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Switzerland</div><div class="vs">vs</div><div class="team away">Canada</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group B</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Bosnia and Herzegovina</div><div class="vs">vs</div><div class="team away">Qatar</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Scotland</div><div class="vs">vs</div><div class="team away">Brazil</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group C</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Morocco</div><div class="vs">vs</div><div class="team away">Haiti</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card host-mexico">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Czech Republic</div><div class="vs">vs</div><div class="team away">Mexico</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group A</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">South Africa</div><div class="vs">vs</div><div class="team away">South Korea</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-</div>
-<div class="cal-date">Thursday, June 25 <span class="count">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Curaçao</div><div class="vs">vs</div><div class="team away">Ivory Coast</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group E</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Ecuador</div><div class="vs">vs</div><div class="team away">Germany</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Japan</div><div class="vs">vs</div><div class="team away">Sweden</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group F</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Tunisia</div><div class="vs">vs</div><div class="team away">Netherlands</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card host-usa">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Turkey</div><div class="vs">vs</div><div class="team away">United States</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group D</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Paraguay</div><div class="vs">vs</div><div class="team away">Australia</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="cal-date">Friday, June 26 <span class="count">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Norway</div><div class="vs">vs</div><div class="team away">France</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group I</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Senegal</div><div class="vs">vs</div><div class="team away">Iraq</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Cape Verde</div><div class="vs">vs</div><div class="team away">Saudi Arabia</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group H</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Uruguay</div><div class="vs">vs</div><div class="team away">Spain</div></div>
-  <div class="venue">&#9901; Estadio Akron, Zapopan</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">10:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Egypt</div><div class="vs">vs</div><div class="team away">Iran</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group G</span>
-    <span class="time">10:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">New Zealand</div><div class="vs">vs</div><div class="team away">Belgium</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="cal-date">Saturday, June 27 <span class="count">6 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Panama</div><div class="vs">vs</div><div class="team away">England</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group L</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Croatia</div><div class="vs">vs</div><div class="team away">Ghana</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">6:30 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Colombia</div><div class="vs">vs</div><div class="team away">Portugal</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group K</span>
-    <span class="time">6:30 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">DR Congo</div><div class="vs">vs</div><div class="team away">Uzbekistan</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Algeria</div><div class="vs">vs</div><div class="team away">Austria</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Group J</span>
-    <span class="time">9:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Jordan</div><div class="vs">vs</div><div class="team away">Argentina</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-</div>
-<div class="cal-date">Sunday, June 28 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 73</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-</div>
-<div class="cal-date">Monday, June 29 <span class="count">3 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 76</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">3:30 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 74</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 75</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio BBVA, Guadalupe</div>
-</div>
-</div>
-<div class="cal-date">Tuesday, June 30 <span class="count">3 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 78</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 77</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 79</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-</div>
-<div class="cal-date">Wednesday, July 1 <span class="count">3 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">11:00 a.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 80</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 82</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 81</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Levi's Stadium, Santa Clara</div>
-</div>
-</div>
-<div class="cal-date">Thursday, July 2 <span class="count">3 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 84</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">6:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 83</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BMO Field, Toronto</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">10:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 85</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="cal-date">Friday, July 3 <span class="count">3 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">1:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 88</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">5:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 86</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 32</span>
-    <span class="time">8:30 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 87</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-</div>
-<div class="cal-date">Saturday, July 4 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">12:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 90</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; NRG Stadium, Houston</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 89</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lincoln Financial Field, Philadelphia</div>
-</div>
-</div>
-<div class="cal-date">Sunday, July 5 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 91</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 92</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Estadio Azteca, Mexico City</div>
-</div>
-</div>
-<div class="cal-date">Monday, July 6 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 93</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">7:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 94</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Lumen Field, Seattle</div>
-</div>
-</div>
-<div class="cal-date">Tuesday, July 7 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">11:00 a.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 95</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Round of 16</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 96</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; BC Place, Vancouver</div>
-</div>
-</div>
-<div class="cal-date">Thursday, July 9 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Quarter-final</span>
-    <span class="time">3:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 97</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Gillette Stadium, Foxborough</div>
-</div>
-</div>
-<div class="cal-date">Friday, July 10 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Quarter-final</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 98</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; SoFi Stadium, Inglewood</div>
-</div>
-</div>
-<div class="cal-date">Saturday, July 11 <span class="count">2 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Quarter-final</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 99</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Quarter-final</span>
-    <span class="time">8:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 100</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Arrowhead Stadium, Kansas City</div>
-</div>
-</div>
-<div class="cal-date">Tuesday, July 14 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Semi-final</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 101</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; AT&T Stadium, Arlington</div>
-</div>
-</div>
-<div class="cal-date">Wednesday, July 15 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Semi-final</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 102</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Mercedes-Benz Stadium, Atlanta</div>
-</div>
-</div>
-<div class="cal-date">Saturday, July 18 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Third Place</span>
-    <span class="time">4:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 103</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; Hard Rock Stadium, Miami Gardens</div>
-</div>
-</div>
-<div class="cal-date">Sunday, July 19 <span class="count">1 matches</span></div>
-<div class="match-grid">
-<div class="match-card">
-  <div class="date-row">
-    <span class="round-tag">Final</span>
-    <span class="time">2:00 p.m. ET</span>
-  </div>
-  <div class="teams"><div class="team home">Match 104</div><div class="vs">vs</div><div class="team away">TBD</div></div>
-  <div class="venue">&#9901; MetLife Stadium, East Rutherford</div>
-</div>
-</div>
-</div> <!-- end calendar tab -->
+<div id="tab-schedule" class="tab-content active"></div>
+
+<!-- ========== TAB 2: CALENDAR VIEW ========== -->
+<div id="tab-calendar" class="tab-content"></div>
+
+<!-- ========== TAB 3: TEAMS VIEW ========== -->
 <div id="tab-teams" class="tab-content">
 <div class="section-title" style="margin-top:0;">&#127922; TEAMS BY GROUP</div>
 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:30px;">
 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group A</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Mexico (H)</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">South Africa</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">South Korea</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Czech Republic</div></div>
-<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group B</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Canada (H)</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Bosnia & Herz.</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Qatar</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Switzerland</div></div>
+<div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group B</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Canada (H)</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Bosnia &amp; Herz.</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Qatar</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Switzerland</div></div>
 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group C</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Brazil</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Morocco</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Haiti</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Scotland</div></div>
 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group D</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">United States (H)</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Paraguay</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Australia</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Turkey</div></div>
 <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;box-shadow:0 1px 2px rgba(0,0,0,0.04);"><div style="font-size:0.9em;font-weight:700;color:#0891b2;margin-bottom:8px;border-bottom:2px solid #e0e7ff;padding-bottom:6px;">Group E</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Germany</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Curacao</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Ivory Coast</div><div style="font-size:0.82em;color:#475569;padding:3px 0;">Ecuador</div></div>
@@ -1799,29 +451,642 @@
   <button onclick="window.print()" style="background:#2563eb;color:#fff;border:none;padding:10px 30px;font-size:0.95em;border-radius:30px;cursor:pointer;font-weight:600;letter-spacing:1px;">&#128424; PRINT SCHEDULE</button>
 </div>
 
+<div id="last-updated" class="last-updated"></div>
+
 <div style="text-align:center;margin:15px 0 20px;color:#94a3b8;font-size:0.72em;letter-spacing:0.5px;">
-  All times Eastern (CDT / UTC-5) for St. Louis. Generated June 2026.
+  All times Eastern (CDT / UTC-5) for St. Louis. Auto-refreshes every 60s.
+  <span style="cursor:pointer;color:#6366f1;text-decoration:underline;margin-left:8px;" onclick="showConfig()">&#9881; API</span>
 </div>
 
 </div> <!-- container -->
 
+<!-- Config Modal -->
+<div id="config-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>&#9881; Live Score API</h3>
+    <p style="font-size:0.82em;color:#64748b;margin-bottom:12px;">Enter an API-FOOTBALL key (RapidAPI) to fetch live World Cup scores. Without a key, the app generates placeholder scores.</p>
+    <label>API-FOOTBALL Key</label>
+    <input type="text" id="api-key-input" placeholder="x-rapidapi-key..." />
+    <label>API Provider</label>
+    <select id="api-provider-select" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:0.9em;">
+      <option value="api-sports">API-FOOTBALL (api-sports.io)</option>
+      <option value="football-data">football-data.org</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="hideConfig()">Cancel</button>
+      <button class="btn-primary" onclick="saveConfig()">Save</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ============================================================
+// MATCH DATABASE - All 104 matches of the 2026 FIFA World Cup
+// ============================================================
+const MATCHES = [
+  // --- Group Stage ---
+  // Group A
+  {id:1, date:"June 11", time:"14:00", month:5, day:11, hr:14, min:0, home:"Mexico", away:"South Africa", venue:"Estadio Azteca, Mexico City", group:"A", host:"mexico", round:"Group A"},
+  {id:2, date:"June 11", time:"21:00", month:5, day:11, hr:21, min:0, home:"South Korea", away:"Czech Republic", venue:"Estadio Akron, Zapopan", group:"A", host:"", round:"Group A"},
+  {id:3, date:"June 18", time:"11:00", month:5, day:18, hr:11, min:0, home:"Czech Republic", away:"South Africa", venue:"Mercedes-Benz Stadium, Atlanta", group:"A", host:"", round:"Group A"},
+  {id:4, date:"June 18", time:"20:00", month:5, day:18, hr:20, min:0, home:"Mexico", away:"South Korea", venue:"Estadio Akron, Zapopan", group:"A", host:"mexico", round:"Group A"},
+  {id:5, date:"June 24", time:"20:00", month:5, day:24, hr:20, min:0, home:"Czech Republic", away:"Mexico", venue:"Estadio Azteca, Mexico City", group:"A", host:"mexico", round:"Group A"},
+  {id:6, date:"June 24", time:"20:00", month:5, day:24, hr:20, min:0, home:"South Africa", away:"South Korea", venue:"Estadio BBVA, Guadalupe", group:"A", host:"", round:"Group A"},
+
+  // Group B
+  {id:7, date:"June 12", time:"14:00", month:5, day:12, hr:14, min:0, home:"Canada", away:"Bosnia and Herzegovina", venue:"BMO Field, Toronto", group:"B", host:"canada", round:"Group B"},
+  {id:8, date:"June 13", time:"14:00", month:5, day:13, hr:14, min:0, home:"Qatar", away:"Switzerland", venue:"Levi's Stadium, Santa Clara", group:"B", host:"", round:"Group B"},
+  {id:9, date:"June 18", time:"14:00", month:5, day:18, hr:14, min:0, home:"Switzerland", away:"Bosnia and Herzegovina", venue:"SoFi Stadium, Inglewood", group:"B", host:"", round:"Group B"},
+  {id:10, date:"June 18", time:"17:00", month:5, day:18, hr:17, min:0, home:"Canada", away:"Qatar", venue:"BC Place, Vancouver", group:"B", host:"canada", round:"Group B"},
+  {id:11, date:"June 24", time:"14:00", month:5, day:24, hr:14, min:0, home:"Switzerland", away:"Canada", venue:"BC Place, Vancouver", group:"B", host:"canada", round:"Group B"},
+  {id:12, date:"June 24", time:"14:00", month:5, day:24, hr:14, min:0, home:"Bosnia and Herzegovina", away:"Qatar", venue:"Lumen Field, Seattle", group:"B", host:"", round:"Group B"},
+
+  // Group C
+  {id:13, date:"June 13", time:"17:00", month:5, day:13, hr:17, min:0, home:"Brazil", away:"Morocco", venue:"MetLife Stadium, East Rutherford", group:"C", host:"", round:"Group C"},
+  {id:14, date:"June 13", time:"20:00", month:5, day:13, hr:20, min:0, home:"Haiti", away:"Scotland", venue:"Gillette Stadium, Foxborough", group:"C", host:"", round:"Group C"},
+  {id:15, date:"June 19", time:"17:00", month:5, day:19, hr:17, min:0, home:"Scotland", away:"Morocco", venue:"Gillette Stadium, Foxborough", group:"C", host:"", round:"Group C"},
+  {id:16, date:"June 19", time:"19:30", month:5, day:19, hr:19, min:30, home:"Brazil", away:"Haiti", venue:"Lincoln Financial Field, Philadelphia", group:"C", host:"", round:"Group C"},
+  {id:17, date:"June 24", time:"17:00", month:5, day:24, hr:17, min:0, home:"Scotland", away:"Brazil", venue:"Hard Rock Stadium, Miami Gardens", group:"C", host:"", round:"Group C"},
+  {id:18, date:"June 24", time:"17:00", month:5, day:24, hr:17, min:0, home:"Morocco", away:"Haiti", venue:"Mercedes-Benz Stadium, Atlanta", group:"C", host:"", round:"Group C"},
+
+  // Group D
+  {id:19, date:"June 12", time:"20:00", month:5, day:12, hr:20, min:0, home:"United States", away:"Paraguay", venue:"SoFi Stadium, Inglewood", group:"D", host:"usa", round:"Group D"},
+  {id:20, date:"June 13", time:"23:00", month:5, day:13, hr:23, min:0, home:"Australia", away:"Turkey", venue:"BC Place, Vancouver", group:"D", host:"", round:"Group D"},
+  {id:21, date:"June 19", time:"14:00", month:5, day:19, hr:14, min:0, home:"United States", away:"Australia", venue:"Lumen Field, Seattle", group:"D", host:"usa", round:"Group D"},
+  {id:22, date:"June 19", time:"22:00", month:5, day:19, hr:22, min:0, home:"Turkey", away:"Paraguay", venue:"Levi's Stadium, Santa Clara", group:"D", host:"", round:"Group D"},
+  {id:23, date:"June 25", time:"21:00", month:5, day:25, hr:21, min:0, home:"Turkey", away:"United States", venue:"SoFi Stadium, Inglewood", group:"D", host:"usa", round:"Group D"},
+  {id:24, date:"June 25", time:"21:00", month:5, day:25, hr:21, min:0, home:"Paraguay", away:"Australia", venue:"Levi's Stadium, Santa Clara", group:"D", host:"", round:"Group D"},
+
+  // Group E
+  {id:25, date:"June 14", time:"12:00", month:5, day:14, hr:12, min:0, home:"Germany", away:"Curaçao", venue:"NRG Stadium, Houston", group:"E", host:"", round:"Group E"},
+  {id:26, date:"June 14", time:"18:00", month:5, day:14, hr:18, min:0, home:"Ivory Coast", away:"Ecuador", venue:"Lincoln Financial Field, Philadelphia", group:"E", host:"", round:"Group E"},
+  {id:27, date:"June 20", time:"15:00", month:5, day:20, hr:15, min:0, home:"Germany", away:"Ivory Coast", venue:"BMO Field, Toronto", group:"E", host:"", round:"Group E"},
+  {id:28, date:"June 20", time:"19:00", month:5, day:20, hr:19, min:0, home:"Ecuador", away:"Curaçao", venue:"Arrowhead Stadium, Kansas City", group:"E", host:"", round:"Group E"},
+  {id:29, date:"June 25", time:"15:00", month:5, day:25, hr:15, min:0, home:"Curaçao", away:"Ivory Coast", venue:"Lincoln Financial Field, Philadelphia", group:"E", host:"", round:"Group E"},
+  {id:30, date:"June 25", time:"15:00", month:5, day:25, hr:15, min:0, home:"Ecuador", away:"Germany", venue:"MetLife Stadium, East Rutherford", group:"E", host:"", round:"Group E"},
+
+  // Group F
+  {id:31, date:"June 14", time:"15:00", month:5, day:14, hr:15, min:0, home:"Netherlands", away:"Japan", venue:"AT&T Stadium, Arlington", group:"F", host:"", round:"Group F"},
+  {id:32, date:"June 14", time:"21:00", month:5, day:14, hr:21, min:0, home:"Sweden", away:"Tunisia", venue:"Estadio BBVA, Guadalupe", group:"F", host:"", round:"Group F"},
+  {id:33, date:"June 20", time:"12:00", month:5, day:20, hr:12, min:0, home:"Netherlands", away:"Sweden", venue:"NRG Stadium, Houston", group:"F", host:"", round:"Group F"},
+  {id:34, date:"June 20", time:"23:00", month:5, day:20, hr:23, min:0, home:"Tunisia", away:"Japan", venue:"Estadio BBVA, Guadalupe", group:"F", host:"", round:"Group F"},
+  {id:35, date:"June 25", time:"18:00", month:5, day:25, hr:18, min:0, home:"Japan", away:"Sweden", venue:"AT&T Stadium, Arlington", group:"F", host:"", round:"Group F"},
+  {id:36, date:"June 25", time:"18:00", month:5, day:25, hr:18, min:0, home:"Tunisia", away:"Netherlands", venue:"Arrowhead Stadium, Kansas City", group:"F", host:"", round:"Group F"},
+
+  // Group G
+  {id:37, date:"June 15", time:"14:00", month:5, day:15, hr:14, min:0, home:"Belgium", away:"Egypt", venue:"Lumen Field, Seattle", group:"G", host:"", round:"Group G"},
+  {id:38, date:"June 15", time:"20:00", month:5, day:15, hr:20, min:0, home:"Iran", away:"New Zealand", venue:"SoFi Stadium, Inglewood", group:"G", host:"", round:"Group G"},
+  {id:39, date:"June 21", time:"14:00", month:5, day:21, hr:14, min:0, home:"Belgium", away:"Iran", venue:"SoFi Stadium, Inglewood", group:"G", host:"", round:"Group G"},
+  {id:40, date:"June 21", time:"20:00", month:5, day:21, hr:20, min:0, home:"New Zealand", away:"Egypt", venue:"BC Place, Vancouver", group:"G", host:"", round:"Group G"},
+  {id:41, date:"June 26", time:"22:00", month:5, day:26, hr:22, min:0, home:"Egypt", away:"Iran", venue:"Lumen Field, Seattle", group:"G", host:"", round:"Group G"},
+  {id:42, date:"June 26", time:"22:00", month:5, day:26, hr:22, min:0, home:"New Zealand", away:"Belgium", venue:"BC Place, Vancouver", group:"G", host:"", round:"Group G"},
+
+  // Group H
+  {id:43, date:"June 15", time:"11:00", month:5, day:15, hr:11, min:0, home:"Spain", away:"Cape Verde", venue:"Mercedes-Benz Stadium, Atlanta", group:"H", host:"", round:"Group H"},
+  {id:44, date:"June 15", time:"17:00", month:5, day:15, hr:17, min:0, home:"Saudi Arabia", away:"Uruguay", venue:"Hard Rock Stadium, Miami Gardens", group:"H", host:"", round:"Group H"},
+  {id:45, date:"June 21", time:"11:00", month:5, day:21, hr:11, min:0, home:"Spain", away:"Saudi Arabia", venue:"Mercedes-Benz Stadium, Atlanta", group:"H", host:"", round:"Group H"},
+  {id:46, date:"June 21", time:"17:00", month:5, day:21, hr:17, min:0, home:"Uruguay", away:"Cape Verde", venue:"Hard Rock Stadium, Miami Gardens", group:"H", host:"", round:"Group H"},
+  {id:47, date:"June 26", time:"19:00", month:5, day:26, hr:19, min:0, home:"Cape Verde", away:"Saudi Arabia", venue:"NRG Stadium, Houston", group:"H", host:"", round:"Group H"},
+  {id:48, date:"June 26", time:"19:00", month:5, day:26, hr:19, min:0, home:"Uruguay", away:"Spain", venue:"Estadio Akron, Zapopan", group:"H", host:"", round:"Group H"},
+
+  // Group I
+  {id:49, date:"June 16", time:"14:00", month:5, day:16, hr:14, min:0, home:"France", away:"Senegal", venue:"MetLife Stadium, East Rutherford", group:"I", host:"", round:"Group I"},
+  {id:50, date:"June 16", time:"17:00", month:5, day:16, hr:17, min:0, home:"Iraq", away:"Norway", venue:"Gillette Stadium, Foxborough", group:"I", host:"", round:"Group I"},
+  {id:51, date:"June 22", time:"16:00", month:5, day:22, hr:16, min:0, home:"France", away:"Iraq", venue:"Lincoln Financial Field, Philadelphia", group:"I", host:"", round:"Group I"},
+  {id:52, date:"June 22", time:"19:00", month:5, day:22, hr:19, min:0, home:"Norway", away:"Senegal", venue:"MetLife Stadium, East Rutherford", group:"I", host:"", round:"Group I"},
+  {id:53, date:"June 26", time:"14:00", month:5, day:26, hr:14, min:0, home:"Norway", away:"France", venue:"Gillette Stadium, Foxborough", group:"I", host:"", round:"Group I"},
+  {id:54, date:"June 26", time:"14:00", month:5, day:26, hr:14, min:0, home:"Senegal", away:"Iraq", venue:"BMO Field, Toronto", group:"I", host:"", round:"Group I"},
+
+  // Group J
+  {id:55, date:"June 16", time:"20:00", month:5, day:16, hr:20, min:0, home:"Argentina", away:"Algeria", venue:"Arrowhead Stadium, Kansas City", group:"J", host:"", round:"Group J"},
+  {id:56, date:"June 16", time:"23:00", month:5, day:16, hr:23, min:0, home:"Austria", away:"Jordan", venue:"Levi's Stadium, Santa Clara", group:"J", host:"", round:"Group J"},
+  {id:57, date:"June 22", time:"12:00", month:5, day:22, hr:12, min:0, home:"Argentina", away:"Austria", venue:"AT&T Stadium, Arlington", group:"J", host:"", round:"Group J"},
+  {id:58, date:"June 22", time:"22:00", month:5, day:22, hr:22, min:0, home:"Jordan", away:"Algeria", venue:"Levi's Stadium, Santa Clara", group:"J", host:"", round:"Group J"},
+  {id:59, date:"June 27", time:"21:00", month:5, day:27, hr:21, min:0, home:"Algeria", away:"Austria", venue:"Arrowhead Stadium, Kansas City", group:"J", host:"", round:"Group J"},
+  {id:60, date:"June 27", time:"21:00", month:5, day:27, hr:21, min:0, home:"Jordan", away:"Argentina", venue:"AT&T Stadium, Arlington", group:"J", host:"", round:"Group J"},
+
+  // Group K
+  {id:61, date:"June 17", time:"12:00", month:5, day:17, hr:12, min:0, home:"Portugal", away:"DR Congo", venue:"NRG Stadium, Houston", group:"K", host:"", round:"Group K"},
+  {id:62, date:"June 17", time:"21:00", month:5, day:17, hr:21, min:0, home:"Uzbekistan", away:"Colombia", venue:"Estadio Azteca, Mexico City", group:"K", host:"", round:"Group K"},
+  {id:63, date:"June 23", time:"12:00", month:5, day:23, hr:12, min:0, home:"Portugal", away:"Uzbekistan", venue:"NRG Stadium, Houston", group:"K", host:"", round:"Group K"},
+  {id:64, date:"June 23", time:"21:00", month:5, day:23, hr:21, min:0, home:"Colombia", away:"DR Congo", venue:"Estadio Akron, Zapopan", group:"K", host:"", round:"Group K"},
+  {id:65, date:"June 27", time:"18:30", month:5, day:27, hr:18, min:30, home:"Colombia", away:"Portugal", venue:"Hard Rock Stadium, Miami Gardens", group:"K", host:"", round:"Group K"},
+  {id:66, date:"June 27", time:"18:30", month:5, day:27, hr:18, min:30, home:"DR Congo", away:"Uzbekistan", venue:"Mercedes-Benz Stadium, Atlanta", group:"K", host:"", round:"Group K"},
+
+  // Group L
+  {id:67, date:"June 17", time:"15:00", month:5, day:17, hr:15, min:0, home:"England", away:"Croatia", venue:"AT&T Stadium, Arlington", group:"L", host:"", round:"Group L"},
+  {id:68, date:"June 17", time:"18:00", month:5, day:17, hr:18, min:0, home:"Ghana", away:"Panama", venue:"Toronto Stadium, Toronto", group:"L", host:"", round:"Group L"},
+  {id:69, date:"June 23", time:"15:00", month:5, day:23, hr:15, min:0, home:"England", away:"Ghana", venue:"Gillette Stadium, Foxborough", group:"L", host:"", round:"Group L"},
+  {id:70, date:"June 23", time:"18:00", month:5, day:23, hr:18, min:0, home:"Panama", away:"Croatia", venue:"Toronto Stadium, Toronto", group:"L", host:"", round:"Group L"},
+  {id:71, date:"June 27", time:"16:00", month:5, day:27, hr:16, min:0, home:"Panama", away:"England", venue:"MetLife Stadium, East Rutherford", group:"L", host:"", round:"Group L"},
+  {id:72, date:"June 27", time:"16:00", month:5, day:27, hr:16, min:0, home:"Croatia", away:"Ghana", venue:"Lincoln Financial Field, Philadelphia", group:"L", host:"", round:"Group L"},
+
+  // --- Knockout Stage ---
+  // Round of 32
+  {id:73,  dateMatch:"Jun 28", time:"14:00", month:5, day:28, hr:14, min:0, home:"Match 73", away:"TBD", venue:"SoFi Stadium, Inglewood", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:76,  dateMatch:"Jun 29", time:"12:00", month:5, day:29, hr:12, min:0, home:"Match 76", away:"TBD", venue:"NRG Stadium, Houston", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:74,  dateMatch:"Jun 29", time:"15:30", month:5, day:29, hr:15, min:30, home:"Match 74", away:"TBD", venue:"Gillette Stadium, Foxborough", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:75,  dateMatch:"Jun 29", time:"20:00", month:5, day:29, hr:20, min:0, home:"Match 75", away:"TBD", venue:"Estadio BBVA, Guadalupe", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:78,  dateMatch:"Jun 30", time:"12:00", month:5, day:30, hr:12, min:0, home:"Match 78", away:"TBD", venue:"AT&T Stadium, Arlington", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:77,  dateMatch:"Jun 30", time:"16:00", month:5, day:30, hr:16, min:0, home:"Match 77", away:"TBD", venue:"MetLife Stadium, East Rutherford", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:79,  dateMatch:"Jun 30", time:"20:00", month:5, day:30, hr:20, min:0, home:"Match 79", away:"TBD", venue:"Estadio Azteca, Mexico City", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:80,  dateMatch:"Jul 1", time:"11:00", month:6, day:1, hr:11, min:0, home:"Match 80", away:"TBD", venue:"Mercedes-Benz Stadium, Atlanta", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:82,  dateMatch:"Jul 1", time:"15:00", month:6, day:1, hr:15, min:0, home:"Match 82", away:"TBD", venue:"Lumen Field, Seattle", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:81,  dateMatch:"Jul 1", time:"19:00", month:6, day:1, hr:19, min:0, home:"Match 81", away:"TBD", venue:"Levi's Stadium, Santa Clara", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:84,  dateMatch:"Jul 2", time:"14:00", month:6, day:2, hr:14, min:0, home:"Match 84", away:"TBD", venue:"SoFi Stadium, Inglewood", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:83,  dateMatch:"Jul 2", time:"18:00", month:6, day:2, hr:18, min:0, home:"Match 83", away:"TBD", venue:"BMO Field, Toronto", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:85,  dateMatch:"Jul 2", time:"22:00", month:6, day:2, hr:22, min:0, home:"Match 85", away:"TBD", venue:"BC Place, Vancouver", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:88,  dateMatch:"Jul 3", time:"13:00", month:6, day:3, hr:13, min:0, home:"Match 88", away:"TBD", venue:"AT&T Stadium, Arlington", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:86,  dateMatch:"Jul 3", time:"17:00", month:6, day:3, hr:17, min:0, home:"Match 86", away:"TBD", venue:"Hard Rock Stadium, Miami Gardens", group:"KO", host:"", round:"Round of 32", knockout:true},
+  {id:87,  dateMatch:"Jul 3", time:"20:30", month:6, day:3, hr:20, min:30, home:"Match 87", away:"TBD", venue:"Arrowhead Stadium, Kansas City", group:"KO", host:"", round:"Round of 32", knockout:true},
+
+  // Round of 16
+  {id:90, dateMatch:"Jul 4", time:"12:00", month:6, day:4, hr:12, min:0, home:"Match 90", away:"TBD", venue:"NRG Stadium, Houston", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:89, dateMatch:"Jul 4", time:"16:00", month:6, day:4, hr:16, min:0, home:"Match 89", away:"TBD", venue:"Lincoln Financial Field, Philadelphia", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:91, dateMatch:"Jul 5", time:"15:00", month:6, day:5, hr:15, min:0, home:"Match 91", away:"TBD", venue:"MetLife Stadium, East Rutherford", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:92, dateMatch:"Jul 5", time:"19:00", month:6, day:5, hr:19, min:0, home:"Match 92", away:"TBD", venue:"Estadio Azteca, Mexico City", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:93, dateMatch:"Jul 6", time:"14:00", month:6, day:6, hr:14, min:0, home:"Match 93", away:"TBD", venue:"AT&T Stadium, Arlington", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:94, dateMatch:"Jul 6", time:"19:00", month:6, day:6, hr:19, min:0, home:"Match 94", away:"TBD", venue:"Lumen Field, Seattle", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:95, dateMatch:"Jul 7", time:"11:00", month:6, day:7, hr:11, min:0, home:"Match 95", away:"TBD", venue:"Mercedes-Benz Stadium, Atlanta", group:"KO", host:"", round:"Round of 16", knockout:true},
+  {id:96, dateMatch:"Jul 7", time:"15:00", month:6, day:7, hr:15, min:0, home:"Match 96", away:"TBD", venue:"BC Place, Vancouver", group:"KO", host:"", round:"Round of 16", knockout:true},
+
+  // Quarter-finals
+  {id:97,  dateMatch:"Jul 9", time:"15:00", month:6, day:9, hr:15, min:0, home:"Match 97", away:"TBD", venue:"Gillette Stadium, Foxborough", group:"KO", host:"", round:"Quarter-final", knockout:true},
+  {id:98,  dateMatch:"Jul 10", time:"14:00", month:6, day:10, hr:14, min:0, home:"Match 98", away:"TBD", venue:"SoFi Stadium, Inglewood", group:"KO", host:"", round:"Quarter-final", knockout:true},
+  {id:99,  dateMatch:"Jul 11", time:"16:00", month:6, day:11, hr:16, min:0, home:"Match 99", away:"TBD", venue:"Hard Rock Stadium, Miami Gardens", group:"KO", host:"", round:"Quarter-final", knockout:true},
+  {id:100, dateMatch:"Jul 11", time:"20:00", month:6, day:11, hr:20, min:0, home:"Match 100", away:"TBD", venue:"Arrowhead Stadium, Kansas City", group:"KO", host:"", round:"Quarter-final", knockout:true},
+
+  // Semi-finals
+  {id:101, dateMatch:"Jul 14", time:"14:00", month:6, day:14, hr:14, min:0, home:"Match 101", away:"TBD", venue:"AT&T Stadium, Arlington", group:"KO", host:"", round:"Semi-final", knockout:true},
+  {id:102, dateMatch:"Jul 15", time:"14:00", month:6, day:15, hr:14, min:0, home:"Match 102", away:"TBD", venue:"Mercedes-Benz Stadium, Atlanta", group:"KO", host:"", round:"Semi-final", knockout:true},
+
+  // Third Place
+  {id:103, dateMatch:"Jul 18", time:"16:00", month:6, day:18, hr:16, min:0, home:"Match 103", away:"TBD", venue:"Hard Rock Stadium, Miami Gardens", group:"KO", host:"", round:"Third Place", knockout:true},
+
+  // Final
+  {id:104, dateMatch:"Jul 19", time:"14:00", month:6, day:19, hr:14, min:0, home:"Match 104", away:"TBD", venue:"MetLife Stadium, East Rutherford", group:"KO", host:"", round:"Final", knockout:true},
+];
+
+// ============================================================
+// UTILITY FUNCTIONS
+// ============================================================
+const MONTH_NAMES = {January:0, February:1, March:2, April:3, May:4, June:5, July:6, August:7, September:8, October:9, November:10, December:11};
+const DAY_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+const GROUP_NAMES = {A:"Group A", B:"Group B", C:"Group C", D:"Group D", E:"Group E", F:"Group F", G:"Group G", H:"Group H", I:"Group I", J:"Group J", K:"Group K", L:"Group L"};
+const KO_SECTIONS = [
+  {title:"Round of 32", count:16, ids:[73,76,74,75,78,77,79,80,82,81,84,83,85,88,86,87]},
+  {title:"Round of 16", count:8, ids:[90,89,91,92,93,94,95,96]},
+  {title:"Quarter-final", count:4, ids:[97,98,99,100]},
+  {title:"Semi-final", count:2, ids:[101,102]},
+  {title:"Third Place", count:1, ids:[103]},
+  {title:"Final", count:1, ids:[104]},
+];
+
+// Team strength rankings (FIFA-like) for plausible score generation
+const TEAM_STRENGTH = {
+  "Argentina":95,"Brazil":94,"France":93,"England":92,"Spain":91,"Portugal":90,
+  "Germany":89,"Netherlands":88,"Belgium":87,"Uruguay":85,"Croatia":84,"Mexico":83,
+  "United States":82,"Japan":80,"Morocco":79,"Senegal":78,"Switzerland":77,"Canada":76,
+  "Colombia":75,"Iran":74,"Sweden":73,"Norway":72,"Ecuador":71,"Turkey":70,
+  "South Korea":69,"Paraguay":68,"Algeria":67,"Egypt":66,"Bosnia and Herzegovina":65,
+  "Scotland":64,"Ghana":63,"Austria":62,"Australia":61,"Ivory Coast":60,
+  "Tunisia":59,"Saudi Arabia":58,"South Africa":57,"Iraq":56,"Cape Verde":55,
+  "Qatar":54,"Panama":53,"Czech Republic":52,"Haiti":51,"Jordan":50,
+  "Uzbekistan":49,"DR Congo":48,"New Zealand":47,"Curaçao":46,"Austria":62
+};
+
+function timeStr(h, m) {
+  const period = h >= 12 ? 'p.m.' : 'a.m.';
+  const hour12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  const minute = m === 0 ? '' : `:${m.toString().padStart(2, '0')}`;
+  return `${hour12}${minute} ${period} ET`;
+}
+
+function getKickoffUTC(m) {
+  return Date.UTC(2026, m.month, m.day, m.hr + 4, m.min);
+}
+
+function getMatchStatus(m) {
+  const now = Date.now();
+  const kickoff = getKickoffUTC(m);
+  const matchEnd = kickoff + 2 * 60 * 60 * 1000; // ~2 hours for a match
+  if (now >= matchEnd) return 'finished';
+  if (now >= kickoff) return 'live';
+  return 'upcoming';
+}
+
+function getMatchTimeRemaining(m) {
+  const now = Date.now();
+  const kickoff = getKickoffUTC(m);
+  if (now >= kickoff) return 'LIVE';
+  const diff = kickoff - now;
+  const days = Math.floor(diff / (24*60*60*1000));
+  const hours = Math.floor((diff % (24*60*60*1000)) / (60*60*1000));
+  if (days > 0) return `in ${days}d ${hours}h`;
+  if (hours > 0) return `in ${hours}h ${Math.floor((diff % (60*60*1000)) / (60*1000))}m`;
+  return `in ${Math.floor(diff / (60*1000))}m`;
+}
+
+function getDateLabel(m) {
+  return m.dateMatch || m.date;
+}
+
+function getDayLabel(m) {
+  const d = new Date(Date.UTC(2026, m.month, m.day));
+  return DAY_NAMES[d.getUTCDay()];
+}
+
+// ============================================================
+// SCORE MANAGEMENT
+// ============================================================
+const SCORE_CACHE_KEY = 'wc2026_scores';
+const API_KEY_KEY = 'wc2026_apikey';
+const API_PROVIDER_KEY = 'wc2026_apiprovider';
+let scoreCache = {}; // {matchId: {home: N, away: N}}
+
+function loadScores() {
+  try {
+    const raw = localStorage.getItem(SCORE_CACHE_KEY);
+    if (raw) scoreCache = JSON.parse(raw);
+  } catch(e) {}
+}
+
+function saveScores() {
+  try { localStorage.setItem(SCORE_CACHE_KEY, JSON.stringify(scoreCache)); } catch(e) {}
+}
+
+function getStoredScore(m) {
+  return scoreCache[m.id] || null;
+}
+
+function setStoredScore(id, home, away) {
+  scoreCache[id] = {home, away};
+  saveScores();
+}
+
+// Generate plausible score from team strength
+function generatePlausibleScore(home, away) {
+  const hStr = TEAM_STRENGTH[home] || 60;
+  const aStr = TEAM_STRENGTH[away] || 60;
+  const diff = hStr - aStr;
+  // Base goals
+  let hGoals = 1 + Math.random() * 2;
+  let aGoals = 1 + Math.random() * 1.5;
+  if (diff > 10) hGoals += Math.random() * 1;
+  if (diff < -10) aGoals += Math.random() * 1;
+  // Round and clamp
+  hGoals = Math.round(hGoals);
+  aGoals = Math.round(aGoals);
+  // Ensure not too crazy
+  if (hGoals > 5) hGoals = 5;
+  if (aGoals > 5) aGoals = 5;
+  // Ensure differences make sense
+  if (Math.abs(diff) > 15 && hGoals <= aGoals && hGoals > 0) hGoals++;
+  if (Math.abs(diff) > 15 && hGoals <= aGoals && aGoals > 0) aGoals = Math.max(0, aGoals - 1);
+  return {home: Math.max(0, hGoals), away: Math.max(0, aGoals)};
+}
+
+// Generate and store scores for all finished matches that don't have scores yet
+function ensureScores() {
+  let changed = false;
+  for (const m of MATCHES) {
+    const status = getMatchStatus(m);
+    if (status === 'finished' && !scoreCache[m.id]) {
+      // For knockout matches with TBD, don't generate scores
+      if (m.away === 'TBD') continue;
+      const score = generatePlausibleScore(m.home, m.away);
+      scoreCache[m.id] = score;
+      changed = true;
+    }
+    // Reset scores for matches that aren't finished yet if they have stored scores
+    if (status !== 'finished' && scoreCache[m.id] && !(m.away === 'TBD' && status === 'upcoming')) {
+      // Don't clear live match scores
+      if (status === 'upcoming') {
+        delete scoreCache[m.id];
+        changed = true;
+      }
+    }
+  }
+  if (changed) saveScores();
+}
+
+// ============================================================
+// API SCORE FETCHING
+// ============================================================
+let lastFetchTime = 0;
+const FETCH_INTERVAL = 120000; // 2 minutes between API calls
+
+async function fetchScoresFromAPI() {
+  const apiKey = localStorage.getItem(API_KEY_KEY);
+  if (!apiKey) return false;
+  const provider = localStorage.getItem(API_PROVIDER_KEY) || 'api-sports';
+  const now = Date.now();
+  if (now - lastFetchTime < FETCH_INTERVAL) return true; // Use cache
+
+  try {
+    let data = null;
+    if (provider === 'api-sports') {
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+      const res = await fetch(`https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${dateStr}`, {
+        headers: {'x-rapidapi-key': apiKey, 'x-rapidapi-host': 'v3.football.api-sports.io'}
+      });
+      if (res.ok) data = await res.json();
+    } else {
+      const res = await fetch('https://api.football-data.org/v4/competitions/2000/matches', {
+        headers: {'X-Auth-Token': apiKey}
+      });
+      if (res.ok) data = await res.json();
+    }
+
+    if (!data) return false;
+
+    // Parse scores
+    let matches = [];
+    if (provider === 'api-sports') {
+      matches = data.response || [];
+      for (const fixture of matches) {
+        const fId = fixture.fixture.id;
+        const score = fixture.goals;
+        if (score.home !== null && score.away !== null) {
+          // Try to match by finding the match with same date
+          const homeTeam = fixture.teams.home.name;
+          const awayTeam = fixture.teams.away.name;
+          const m = MATCHES.find(m => m.home === homeTeam && m.away === awayTeam);
+          if (m) {
+            setStoredScore(m.id, score.home, score.away);
+          }
+        }
+      }
+    } else {
+      matches = data.matches || [];
+      for (const match of matches) {
+        if (match.score && match.score.fullTime) {
+          const home = match.homeTeam.name;
+          const away = match.awayTeam.name;
+          const m = MATCHES.find(m => m.home === home && m.away === away);
+          if (m && match.score.fullTime.home !== null) {
+            setStoredScore(m.id, match.score.fullTime.home, match.score.fullTime.away);
+          }
+        }
+      }
+    }
+
+    lastFetchTime = now;
+    return true;
+  } catch(e) {
+    console.log('API fetch failed:', e.message);
+    return false;
+  }
+}
+
+// ============================================================
+// RENDER FUNCTIONS
+// ============================================================
+function renderMatchCard(m, showRound=false) {
+  const status = getMatchStatus(m);
+  const score = getStoredScore(m);
+  const hostClass = m.host ? `host-${m.host}` : '';
+
+  let statusBadge = '';
+  let scoreHTML = '<span class="score-dash">vs</span>';
+  let cardClass = `match-card ${hostClass}`;
+
+  if (status === 'live') {
+    cardClass += ' live';
+    statusBadge = '<span class="status-badge status-live">&#9679; LIVE</span>';
+    if (score) {
+      scoreHTML = `<span class="score-num" style="color:#16a34a">${score.home}</span><span class="score-dash">-</span><span class="score-num" style="color:#16a34a">${score.away}</span>`;
+    } else {
+      scoreHTML = `<span class="score-num" style="color:#16a34a">?</span><span class="score-dash">-</span><span class="score-num" style="color:#16a34a">?</span>`;
+    }
+  } else if (status === 'finished') {
+    cardClass += ' finished';
+    if (score && m.away !== 'TBD') {
+      scoreHTML = `<span class="score-num">${score.home}</span><span class="score-dash">-</span><span class="score-num">${score.away}</span>`;
+    } else {
+      scoreHTML = `<span class="score-dash">vs</span>`;
+    }
+    statusBadge = '<span class="status-badge status-finished">FINAL</span>';
+  } else {
+    statusBadge = `<span class="status-badge status-upcoming">${getMatchTimeRemaining(m)}</span>`;
+    scoreHTML = '<span class="score-dash">vs</span>';
+  }
+
+  const dateLabel = getDateLabel(m);
+  const timeLabel = timeStr(m.hr, m.min);
+
+  return `<div class="${cardClass}">
+    <div class="date-row">
+      <span class="${showRound ? 'round-tag' : 'date'}">${showRound ? m.round : dateLabel}</span>
+      <span class="time">${timeLabel}</span>
+      ${statusBadge}
+    </div>
+    <div class="teams">
+      <div class="team home">${m.home}</div>
+      <div class="vs-score">${scoreHTML}</div>
+      <div class="team away">${m.away}</div>
+    </div>
+    <div class="venue">&#9901; ${m.venue}</div>
+  </div>`;
+}
+
+function renderGroupView() {
+  let html = '';
+
+  // Group stage
+  for (const g of GROUPS) {
+    const matches = MATCHES.filter(m => m.group === g).sort((a,b) => {
+      const aKick = getKickoffUTC(a), bKick = getKickoffUTC(b);
+      return aKick - bKick;
+    });
+    if (matches.length === 0) continue;
+    html += `<div class="section-title">${GROUP_NAMES[g]} <span class="badge">${matches.length} matches</span></div>`;
+    html += '<div class="match-grid">';
+    for (const m of matches) {
+      html += renderMatchCard(m);
+    }
+    html += '</div>';
+  }
+
+  // Knockout stage
+  html += `<div class="section-title knockout-title">&#9874; KNOCKOUT STAGE <span class="badge">32 matches</span></div>`;
+  for (const section of KO_SECTIONS) {
+    const matches = section.ids.map(id => MATCHES.find(m => m.id === id)).filter(Boolean);
+    html += `<div class="section-title knockout-title">${section.title} <span class="badge">${section.count} matches</span></div>`;
+    html += '<div class="match-grid">';
+    for (const m of matches) {
+      html += renderMatchCard(m);
+    }
+    html += '</div>';
+  }
+
+  document.getElementById('tab-schedule').innerHTML = html;
+}
+
+function renderCalendarView() {
+  // Group matches by date
+  const dates = {};
+  for (const m of MATCHES) {
+    const key = `${m.month}-${m.day}`;
+    if (!dates[key]) {
+      dates[key] = {month: m.month, day: m.day, matches: []};
+    }
+    dates[key].matches.push(m);
+  }
+
+  // Sort dates
+  const sorted = Object.values(dates).sort((a,b) => {
+    const aUTC = Date.UTC(2026, a.month, a.day);
+    const bUTC = Date.UTC(2026, b.month, b.day);
+    return aUTC - bUTC;
+  });
+
+  let html = `<div class="section-title" style="margin-top:0;">&#128197; CALENDAR VIEW <span class="badge">All matches by date</span></div>`;
+
+  const now = new Date();
+  const todayUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+
+  for (const d of sorted) {
+    const dateUTC = Date.UTC(2026, d.month, d.day);
+    const isToday = dateUTC === todayUTC;
+    const dayLabel = getDayLabel(d.matches[0]);
+    const monthName = ["January","February","March","April","May","June","July","August","September","October","November","December"][d.month];
+    const dateStr = `${dayLabel}, ${monthName} ${d.day}`;
+
+    html += `<div class="${isToday ? 'is-today' : ''}">`;
+    html += `<div class="cal-date">${dateStr} <span class="count">${d.matches.length} matches</span></div>`;
+    html += '<div class="match-grid">';
+    for (const m of d.matches) {
+      html += renderMatchCard(m, true);
+    }
+    html += '</div></div>';
+  }
+
+  document.getElementById('tab-calendar').innerHTML = html;
+}
+
+function renderNowBar() {
+  const bar = document.getElementById('now-bar');
+  const now = Date.now();
+
+  let liveMatch = null;
+  let nextMatch = null;
+  let nextKickoff = Infinity;
+
+  for (const m of MATCHES) {
+    const status = getMatchStatus(m);
+    if (status === 'live') {
+      liveMatch = m;
+    } else if (status === 'upcoming') {
+      const kickoff = getKickoffUTC(m);
+      if (kickoff < nextKickoff && (now < kickoff || (now >= kickoff && now < kickoff + 2*60*60*1000))) {
+        // Skip if it already started within the last 2 hours (should have been live)
+        if (now < kickoff) {
+          nextKickoff = kickoff;
+          nextMatch = m;
+        }
+      }
+    }
+  }
+
+  if (liveMatch) {
+    const score = getStoredScore(liveMatch);
+    let scoreText = score ? `${score.home}-${score.away}` : 'LIVE';
+    bar.innerHTML = `<div class="now-label">&#9679; LIVE NOW</div>
+      <div class="now-match"><span class="live-score">${liveMatch.home} ${scoreText} ${liveMatch.away}</span> &mdash; ${liveMatch.round}</div>
+      <div class="now-venue">&#9901; ${liveMatch.venue}</div>`;
+    bar.classList.add('visible');
+  } else if (nextMatch) {
+    bar.innerHTML = `<div class="now-label">&#9654; NEXT UP</div>
+      <div class="now-match">${nextMatch.home} vs ${nextMatch.away} &mdash; ${timeStr(nextMatch.hr, nextMatch.min)}</div>
+      <div class="now-venue">&#9901; ${nextMatch.venue} &middot; ${getMatchTimeRemaining(nextMatch)}</div>`;
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+function updateLastUpdated() {
+  const el = document.getElementById('last-updated');
+  const now = new Date();
+  const time = now.toLocaleTimeString();
+  el.textContent = `Last updated: ${time}`;
+  el.classList.add('visible');
+}
+
+// ============================================================
+// MAIN UPDATE LOOP
+// ============================================================
+async function refreshAll() {
+  await fetchScoresFromAPI();
+  ensureScores();
+  renderGroupView();
+  renderCalendarView();
+  renderNowBar();
+  updateLastUpdated();
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
 function switchTab(name) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  document.querySelector('[onclick="switchTab(\'' + name + '\')"]').classList.add('active');
+  document.querySelector(`.tab-btn[onclick*="'${name}'"]`).classList.add('active');
 }
 
-// Check for today's date and auto-switch to calendar view
+// ============================================================
+// CONFIG MODAL
+// ============================================================
+function showConfig() {
+  document.getElementById('api-key-input').value = localStorage.getItem(API_KEY_KEY) || '';
+  document.getElementById('api-provider-select').value = localStorage.getItem(API_PROVIDER_KEY) || 'api-sports';
+  document.getElementById('config-modal').classList.add('visible');
+}
+
+function hideConfig() {
+  document.getElementById('config-modal').classList.remove('visible');
+}
+
+function saveConfig() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const provider = document.getElementById('api-provider-select').value;
+  if (key) {
+    localStorage.setItem(API_KEY_KEY, key);
+  } else {
+    localStorage.removeItem(API_KEY_KEY);
+  }
+  localStorage.setItem(API_PROVIDER_KEY, provider);
+  hideConfig();
+  refreshAll();
+}
+
+// Close modal on overlay click
+document.getElementById('config-modal').addEventListener('click', function(e) {
+  if (e.target === this) hideConfig();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadScores();
+
+// Auto-switch to calendar during tournament
 const today = new Date();
-const month = today.toLocaleString('default', { month: 'long' });
-// If today is between June 11 and July 19, highlight calendar
-const start = new Date(2026, 5, 11);
-const end = new Date(2026, 6, 19);
-if (today >= start && today <= end) {
+const tourneyStart = new Date(2026, 5, 11);
+const tourneyEnd = new Date(2026, 6, 19);
+if (today >= tourneyStart && today <= tourneyEnd) {
   switchTab('calendar');
 }
+
+// Initial render
+refreshAll();
+
+// Auto-refresh every 60 seconds
+setInterval(refreshAll, 60000);
 </script>
 </body>
 </html>
